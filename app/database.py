@@ -1,8 +1,8 @@
 import os
 import psycopg2
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from dotenv import load_dotenv
-
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
@@ -15,7 +15,7 @@ DB_NAME = os.getenv('DB_NAME')
 
 # Inicializar la instancia de SQLAlchemy
 db = SQLAlchemy()
-
+migrate = Migrate()
 def create_database():
     """Crea la base de datos si no existe.
 
@@ -56,3 +56,4 @@ def configure_app(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Deshabilitar el seguimiento de modificaciones
     db.init_app(app)  # Inicializar SQLAlchemy con la aplicación
+    migrate.init_app(app, db)  # Inicializar Flask-Migrate con la aplicación y la instancia de SQLAlchemy

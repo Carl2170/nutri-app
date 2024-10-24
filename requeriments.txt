@@ -1,0 +1,10 @@
+SQLAlchemy
+flask_sqlalchemy
+psycopg2
+python-dotenv
+flask-httpauth
+pyjwt
+marshmallow-sqlalchemy
+Flask-migrate
+-U setuptools
+flasgger
