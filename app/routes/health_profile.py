@@ -37,6 +37,14 @@ def create():
               type: float
               description: altura del usuario
               example: 1.60
+            birthday:
+              type: date
+              description: fecha de nacimiento del usuario
+              example: 1994-01-01
+            gender:
+              type: string
+              description: lista desplegable con las siguientes opociones de género (Masculino, Femenino)
+              example: Masculino
             physical_activity:
               type: string
               description: lista desplegable con las siguientes opociones de condición física (Sedentario, Actividad Ligera, Actividad Moderada, Actividad Intensa, Atleta)
@@ -44,7 +52,11 @@ def create():
             health_restrictions:
               type: string
               description: lista desplegable con las siguientes opociones de restriccioes de salud (Ninguna, Diabetes, Hipertensión, Asma, Alergias, Enfermedad cardíaca, Problemas articulares, Sobrepeso, Bajo peso, Trastornos alimenticios, Problemas de movilidad, Enfermedades respiratorias, Cáncer, Enfermedades neurológicas)
-              example: Enfermedad cardíaca    
+              example: Enfermedad cardíaca
+            user_id:
+                type: int
+                description: id del usuario
+                example: 1
     responses:
       201:
         description: Registro datos corporales exitoso
@@ -77,7 +89,7 @@ def create():
     """
     data = request.get_json()
 
-    required_fields = ['age','weight','height','physical_activity','health_restrictions','user_id']
+    required_fields = ['age','weight','height','physical_activity','health_restrictions','user_id','birthday','gender',]
 
     if not all(field in data for field in required_fields):
         return jsonify({"message": "Todos los campos son requeridos."}), 400
@@ -89,6 +101,8 @@ def create():
     health_restrictions = data['health_restrictions']
     update_date = datetime.now().replace(microsecond=0)
     user_id = data['user_id']
+    birthday = data['birthday']
+    gender = data['gender']
 
     new_health_profile = HealthProfile(
         age=age,
@@ -97,7 +111,9 @@ def create():
         physical_activity=physical_activity,
         health_restrictions=health_restrictions,
         update_date=update_date,
-        user_id=user_id
+        user_id=user_id,
+        birthday = birthday,
+        gender = gender
     )
 
     try:

@@ -48,7 +48,7 @@ pip install flask
 Para ejecutar la aplicación:
 
 ```bash
-flask --app main --debug run
+flask --app main --debug run --host=0.0.0.0
 ```
 
 ## 5. Instalar las dependencias
@@ -69,8 +69,9 @@ pip install python-dotenv
 pip install flask-httpauth
 pip install pyjwt
 pip install marshmallow-sqlalchemy
+pip install flask-marshmallow
 pip install Flask-migrate
-pip install -U setuptools
+pip install setuptools
 pip install flasgger
 ```
 
