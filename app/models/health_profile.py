@@ -10,7 +10,9 @@ class HealthProfile(db.Model):
     height = db.Column(db.Float, nullable=False)
     physical_activity = db.Column(db.String(50), nullable=False)
     update_date = db.Column(db.DateTime, nullable=False)
-    health_restrictions = db.Column(db.String(50), nullable=True)  
+    health_restrictions = db.Column(db.String(50), nullable=True)
+    birthday = db.Column(db.Date, nullable=False)  # Campo de fecha
+    gender = db.Column(db.String(10), nullable=False)  # Campo de género
 
     # Clave foránea que apunta a la tabla 'user'
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
@@ -25,6 +27,8 @@ class HealthProfile(db.Model):
             f'Weight: {self.weight}, '
             f'physical_activity: {self.physical_activity}, '
             f'update_date: {self.update_date}'
+            f'Gender: {self.gender}, '
+            f'Birthday: {self.birthday}, '
         )
 
 #CONDICION FISICA

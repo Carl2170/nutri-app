@@ -5,6 +5,7 @@ python-dotenv
 flask-httpauth
 pyjwt
 marshmallow-sqlalchemy
+flask-marshmallow
 Flask-migrate
--U setuptools
+setuptools
 flasgger

@@ -12,6 +12,8 @@ class HealthProfileSchema(Schema):
     update_date = fields.DateTime(required=True)
     health_restrictions = fields.String(required=False)
     user_id = fields.Integer(dump_only=True)
+    birthday = fields.Date(required=True)
+    gender = fields.String(required=True)
 
 #     class Meta:
 #         model = HealthProfile
