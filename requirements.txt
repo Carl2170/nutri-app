@@ -11,3 +11,4 @@ setuptools
 flasgger
 pandas
 openpyxl
+google-generativeai

@@ -35,23 +35,6 @@ class HealthProfile(db.Model):
             f'Birthday: {self.birthday}, '
         )
 
-#CONDICION FISICA
-
-# Sedentario
-# Descripción: Realiza poco o ningún ejercicio físico. Su actividad diaria es mínima.
-
-# Actividad Ligera
-# Descripción: Realiza actividades ligeras como caminar ocasionalmente o hacer tareas domésticas.
-
-# Actividad Moderada
-# Descripción: Realiza ejercicio moderado 1-3 días a la semana (ejemplo: caminar, yoga, ciclismo ligero).
-
-# Actividad Intensa
-# Descripción: Realiza ejercicio intenso 3-5 días a la semana (ejemplo: correr, entrenamiento de fuerza, deportes).
-
-# Atleta
-# Descripción: Entrenamiento regular y intensivo, 6-7 días a la semana. Incluye deportes competitivos o entrenamiento especializado.
-
 #RESTRICCION DE SALUD
 # Ninguna
 # Diabetes
@@ -69,3 +52,13 @@ class HealthProfile(db.Model):
 # Enfermedades neurológicas
 # Trastornos psicológicos (especificar)
 # Limitaciones físicas (especificar)
+
+#OBJECTIVOS
+# Perder peso
+# Ganar músculo
+# Mantener peso
+# Mejorar la salud cardiovascular
+# Mejorar la salud digestiva
+# Control de la diabetes
+# Mejorar la composición corporal (bajar grasa y ganar músculo al mismo tiempo)
+# Aumentar la energía
