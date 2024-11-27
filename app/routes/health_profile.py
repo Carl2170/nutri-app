@@ -4,6 +4,8 @@ from datetime import datetime
 
 
 from app.models.health_profile import HealthProfile
+from app.models.physical_activity import PhysicalActivity
+
 from app.database import db
 
 from app.routes.auth import generate_jwt

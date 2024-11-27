@@ -97,11 +97,40 @@ flask db migrate -m "detalle de la migración"
 flask db upgrade
 ```
 
-## Documentación de Endpoints (Swagger)
 
-Después de iniciar la aplicación Flask, puedes acceder a la documentación Swagger en la siguiente URL:
+## 7. Ejecutar comandos CLI
 
-[http://localhost:5000/apidocs/](http://localhost:5000/apidocs/)
+Este proyecto incluye varios comandos CLI registrados para facilitar la inicialización de datos en la base de datos. Se tiene que haber ejecutado las migraciones.
+
+### Cargar datos de actividades físicas:
+
+```bash
+flask seed-physical-activities-db
+```
+Inicializa datos relacionados con actividades físicas en la base de datos.
+
+### Cargar usuarios y perfiles de salud
+
+```bash
+flask seed-users-health-profiles-db
+```
+Inserta usuarios de ejemplo y sus respectivos perfiles de salud.
+
+### Cargar alimentos predefinidos
+
+```bash
+flask seed-food-db
+```
+Agrega alimentos predefinidos con información detallada como calorías, proteínas y beneficios.
+
+### Ejemplo de uso
+Para poblar la base de datos con los datos iniciales, ejecuta uno o varios de estos comandos según sea necesario desde la raíz del proyecto:
+```bash
+flask seed-physical-activities-db
+flask seed-users-health-profiles-db
+flask seed-food-db
+
+```
 
 ---
 
