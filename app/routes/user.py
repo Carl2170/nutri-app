@@ -3,6 +3,10 @@ from werkzeug.security import generate_password_hash
 from app.models.user import User
 from app.routes.auth import token_required
 
+from app.models.food import Food
+from app.models.meal import Meal
+from app.models.meal_food import MealFood
+
 from app.schemas.user import UserSchema
 
 from app.database import db
