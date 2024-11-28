@@ -91,7 +91,7 @@ def create():
     """
     data = request.get_json()
 
-    required_fields = ['age','weight','height','physical_activity','health_restrictions','user_id','birthday','gender',]
+    required_fields = ['age','weight','height','physical_activity_id','health_restrictions','user_id','birthday','gender',]
 
     if not all(field in data for field in required_fields):
         return jsonify({"message": "Todos los campos son requeridos."}), 400
@@ -99,7 +99,7 @@ def create():
     age = data['age']
     weight = data['weight'] 
     height = data['height']
-    physical_activity = data['physical_activity']
+    physical_activity_id = data['physical_activity_id']
     health_restrictions = data['health_restrictions']
     update_date = datetime.now().replace(microsecond=0)
     user_id = data['user_id']
@@ -110,7 +110,7 @@ def create():
         age=age,
         weight=weight,
         height=height,
-        physical_activity=physical_activity,
+        physical_activity_id=physical_activity_id,
         health_restrictions=health_restrictions,
         update_date=update_date,
         user_id=user_id,

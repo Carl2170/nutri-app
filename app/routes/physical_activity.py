@@ -60,13 +60,13 @@ def get_all_physical_activities():
             "name": activity.name,
             "description": activity.description,
             "PAL": activity.PAL,
-            "health_profile": {
-                "id": activity.health_profile.id if activity.health_profile else None,
-                "age": activity.health_profile.age if activity.health_profile else None,
-                "weight": activity.health_profile.weight if activity.health_profile else None,
-                "height": activity.health_profile.height if activity.health_profile else None,
-                "physical_activity": activity.health_profile.physical_activity if activity.health_profile else None,
-            } if activity.health_profile else None
+            # "health_profile": {
+            #     "id": activity.health_profile.id if activity.health_profile else None,
+            #     "age": activity.health_profile.age if activity.health_profile else None,
+            #     "weight": activity.health_profile.weight if activity.health_profile else None,
+            #     "height": activity.health_profile.height if activity.health_profile else None,
+            #     "physical_activity": activity.health_profile.physical_activity if activity.health_profile else None,
+            # } if activity.health_profile else None
         }
         for activity in physical_activities
     ]
