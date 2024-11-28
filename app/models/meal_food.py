@@ -7,7 +7,7 @@ class MealFood(db.Model):
     meal_id = db.Column(db.Integer, db.ForeignKey("meal.id"), nullable=False)
     food_id = db.Column(db.Integer, db.ForeignKey("food.id"), nullable=False)
     quantity = db.Column(db.Float, nullable=False, default=1.0)  # Porción o cantidad del alimento
-
+    type_quantity =  db.Column(db.String(50), nullable=False)
     # Relaciones con Meal y Food
     #meal = db.relationship("Meal", backref=db.backref("meal_food_associations", cascade="all, delete-orphan"))
     #food = db.relationship("Food", backref=db.backref("meal_food_associations", cascade="all, delete-orphan"), single_parent=True)

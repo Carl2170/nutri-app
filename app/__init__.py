@@ -11,7 +11,7 @@ from app.routes.physical_activity import physical_activity_bp
 from app.extensions import ma
 from app.routes.auth import auth_bp
 from app.database import create_database, configure_app
-from app.seed import seed_data, seed_users_health_profile, seed_food
+from app.seed import seed_data, seed_users_health_profile, seed_food, seed_meal
 
 
 def create_app():
@@ -80,4 +80,13 @@ def register_cli_commands(app):
         Comando CLI para inicializar la base de datos con alimentos.
         """
         seed_food()
+        print("Base de datos inicializada con alimentos.")
+
+    @app.cli.command("seed-meal-db")
+    @with_appcontext
+    def seed_meal_db():
+        """
+        Comando CLI para inicializar la base de datos con alimentos.
+        """
+        seed_meal()
         print("Base de datos inicializada con alimentos.")

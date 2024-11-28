@@ -12,3 +12,4 @@ flasgger
 pandas
 openpyxl
 google-generativeai
+scikit-learn
