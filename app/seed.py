@@ -5,10 +5,14 @@ import psycopg2
 from datetime import datetime
 
 from app.database import db
+from app.models.meal import Meal
 from app.models.physical_activity import PhysicalActivity
 from app.models.user import User
 from app.models.health_profile import HealthProfile
 from app.models.food import Food
+from app.models.meal_food import MealFood
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import exists
 
 
 #función para cargar datos de tipos de actividad fisica predefinidas en la base de datos
@@ -250,6 +254,39 @@ def seed_users_health_profile():
 
         print("Usuarios y perfiles de salud cargados exitosamente.")
 
+
+#funcion para dar formato comidas
+def load_meal (comidas):
+    array_comidas = []
+    # Inserción de comidas y sus alimentos en el arreglo
+    for comida in comidas:
+        nombre_comida = comida[0]  # Nombre de la comida
+        tipo_comida = comida[1]  # Tipo de la comida (desayuno, almuerzo, cena)
+        alimentos = comida[2]  # Alimentos de la comida
+        
+        # Arreglo para los alimentos de esta comida
+        alimentos_comida = []
+
+        # Para cada alimento en la comida
+        for alimento in alimentos:
+            alimento_comida = {
+                "nombre": alimento["alimento"],  # Nombre del alimento
+                "cantidad_alimento": alimento["cantidad"],  # Cantidad del alimento
+                "tipo_alimento": alimento["tipo"]  # Tipo del alimento (gramos o porción)
+            }
+            alimentos_comida.append(alimento_comida)  # Agregar el alimento al arreglo de alimentos
+
+        # Guardar la comida junto con sus alimentos
+        comida_completa = {
+            "nombre_comida": nombre_comida,
+            "tipo_comida": tipo_comida,
+            "alimentos": alimentos_comida
+        }
+        array_comidas.append(comida_completa)  # Agregar la comida completa al arreglo final
+    
+    return array_comidas  #
+
+
 #función para cargar datos de alimentos predefinidos en la base de datos
 def seed_food():
     base_dir = os.getcwd()  # Directorio base (raíz del proyecto)
@@ -271,6 +308,14 @@ def seed_food():
         if not all(col in df.columns for col in required_columns):
             print(f"El archivo Excel no contiene las columnas necesarias: {required_columns}")
             return
+        
+                # Limpiar datos en el DataFrame
+        df = df.fillna('')  # Reemplazar NaN con cadenas vacías
+        df['nombre'] = df['nombre'].str.strip()  # Eliminar espacios en blanco al inicio y al final
+        df['descripcion'] = df['descripcion'].str.strip()
+        df['imagen_url'] = df['imagen_url'].str.strip()
+        df['categoria'] = df['categoria'].str.strip()
+        df['beneficios'] = df['beneficios'].str.strip()
 
         # Insertar datos en la tabla
         for index, row in df.iterrows():
@@ -303,3 +348,256 @@ def seed_food():
         print(f"Se han cargado {quantity} alimentos.")
     except Exception as e:
         print(f"Error al leer o insertar datos: {e}")
+
+def food_exists(name_food):
+    try:
+        exists_query = db.session.query(exists().where(Food.name == name_food)).scalar()
+        
+        if exists_query:
+            print(f"Food with name {name_food} exists.")
+        else:
+            print(f"Food with name {name_food} does not exist.")
+    
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+def get_food(name_food):
+    print(name_food)
+    try:
+            
+        name_food = name_food.strip()
+        exists_query = db.session.query(exists().where(Food.name == name_food)).scalar()
+
+        if  exists_query:
+            print(f" existe")
+        else :
+            print(f"no existe")
+
+
+        all_foods = db.session.query(Food).all()
+        #for food in all_foods:
+            #print(f"Food in DB: {food.name}")
+    
+        comida = db.session.query(Food).filter(Food.name.ilike(name_food)).one_or_none()
+
+        if comida is None:
+            # Aquí puedes manejar el caso cuando no se encuentra la comida
+            raise ValueError(f"alimento con nombre {name_food} no encontrado.")
+        
+        return comida
+    
+    except NoResultFound:
+        # Aquí gestionamos el caso donde no se encuentra el alimento (aunque with `one_or_none()`, NoResultFound es menos probable)
+        raise ValueError(f"Food with name {name_food} not found.")
+    
+    except Exception as e:
+        # Manejar otros posibles errores
+        print(f"An error occurred: {str(e)}")
+        return None
+
+def seed_meal():
+    insert_meals(COMIDA1)
+    insert_meals(COMIDA2)
+
+    
+def insert_meals(comidas):
+    comidas = load_meal(comidas)  # Preparar los datos de las comidas y alimentos
+
+    for comida in comidas:
+        nombre_comida = comida["nombre_comida"]
+        tipo_comida = comida["tipo_comida"]
+        alimentos = comida["alimentos"]
+
+        total_calories = 0
+        total_proteins = 0
+        total_fats = 0
+        total_carbohydrates = 0
+
+        # Crear la comida (Meal)
+        meal = Meal(
+            name=nombre_comida,
+            meal_type=tipo_comida,
+            status=False,
+            total_calories=total_calories,
+            total_proteins=total_proteins,
+            total_fats=total_fats,
+            total_carbohydrates=total_carbohydrates
+        )
+        
+        # Añadir la comida a la base de datos
+        db.session.add(meal)
+        db.session.flush()  # Para obtener el ID de la comida recién insertada
+
+        # Relacionar los alimentos con la comida
+        for alimento in alimentos:
+            # Obtener el alimento desde la base de datos
+            food = get_food(alimento["nombre"])
+
+            # Calcular las propiedades nutricionales según la cantidad
+            cantidad = alimento["cantidad_alimento"]
+            tipo = alimento["tipo_alimento"]
+
+            # Realizamos la multiplicación de las propiedades nutricionales
+            total_calories += food.calories * (cantidad / 100) if food.calories else 0
+            total_proteins += food.proteins * (cantidad / 100) if food.proteins else 0
+            total_fats += food.fats * (cantidad / 100) if food.fats else 0
+            total_carbohydrates += food.carbohydrates * (cantidad / 100) if food.carbohydrates else 0
+
+            # Insertar la relación de la comida con el alimento
+            meal_food = MealFood(
+                meal_id=meal.id,
+                food_id=food.id,
+                quantity=cantidad,
+                type_quantity=tipo
+            )
+            db.session.add(meal_food)
+            print(f"Se han cargado comidas.")
+
+
+        # Actualizar las propiedades nutricionales totales de la comida
+        meal.total_calories = total_calories
+        meal.total_proteins = total_proteins
+        meal.total_fats = total_fats
+        meal.total_carbohydrates = total_carbohydrates
+
+        db.session.commit()  # Guardar todo en la base de datos
+
+
+COMIDA1 = [
+    # Desayuno
+    [  
+        "Desayuno Energético",
+        "desayuno",
+        [
+            {"alimento": "Huevo entero (100 gr)", "cantidad": 2, "tipo": "porción"},  # Porciones
+            {"alimento": "Aguacate", "cantidad": 1, "tipo": "porción"},  # Porciones
+            {"alimento": "Pan Integral", "cantidad": 2, "tipo": "porción"}  # Porciones
+        ]
+    ],
+    
+    # Almuerzo
+    [
+        "Almuerzo Alto en Proteínas",
+        "almuerzo",
+        [
+            {"alimento": "Pavo pechuga", "cantidad": 150, "tipo": "gramos"},  # Gramos
+            {"alimento": "Espárrago", "cantidad": 100, "tipo": "gramos"},  # Gramos
+            {"alimento": "Arroz", "cantidad": 80, "tipo": "gramos"}  # Gramos
+        ]
+    ],
+    
+    # Cena
+    [
+        "Cena Ligera",
+        "cena",
+        [
+            {"alimento": "Pollo pechuga", "cantidad": 120, "tipo": "gramos"},  # Gramos
+            {"alimento": "Lechuga", "cantidad": 50, "tipo": "gramos"},  # Gramos
+            {"alimento": "Tomate", "cantidad": 50, "tipo": "gramos"}  # Gramos
+        ]
+    ]
+]
+
+
+
+COMIDA2 = [
+    # Día 1
+
+    # Desayuno
+    ["Leche con claras de huevo y frutas", 
+     "desayuno",
+        [
+            {"alimento": "Leche entera", "cantidad": 50, "tipo": "gramos"},
+            {"alimento": "Fresa", "cantidad": 50, "tipo": "gramos"},
+            {"alimento": "Almendra", "cantidad": 15, "tipo": "gramos"}
+        ]
+    ],
+
+    # Almuerzo
+    ["Pollo con arroz integral y brócoli", 
+    "almuerzo",
+        [
+            {"alimento": "Pollo pechuga", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Arroz", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Brécol", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Aceite de oliva", "cantidad": 1, "tipo": "porcion"}
+        ]
+    ],
+
+    # Cena
+    ["Pescado (salmón) con patata y espárragos",
+    "cena",
+ 
+        [
+            {"alimento": "Salmón", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Patata", "cantidad": 150, "tipo": "gramos"},
+            {"alimento": "Espárrago", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Aceite de oliva", "cantidad": 1, "tipo": "porcion"}
+        ]
+    ],
+
+    # Día 2
+
+    # Desayuno
+    ["Yogur con granola, frutos rojos y nueces",
+    "desayuno",
+        [
+            {"alimento": "Yogur entero", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Nuez", "cantidad": 15, "tipo": "gramos"}
+        ]
+    ],
+
+    # Almuerzo
+    ["Carne magra de cerdo y zanahorias", 
+     "almuerzo",
+        [
+            {"alimento": "Cerdo carne magra", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Zanahoria", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Aceite de oliva", "cantidad": 1, "tipo": "porcion"}
+        ]
+    ],
+
+    # Cena
+    ["Pechuga de pavo con puré de calabaza",
+    "cena",
+        [
+            {"alimento": "Pavo pechuga", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Calabaza", "cantidad": 150, "tipo": "gramos"},
+            {"alimento": "Espinaca", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Aceite de oliva", "cantidad": 1, "tipo": "porcion"}
+        ]
+    ],
+
+    # Día 3
+
+    # Desayuno
+    ["Tostadas de pan integral con aguacate y huevo", 
+     "desayuno",
+        [
+            {"alimento": "Pan Integral", "cantidad": 2, "tipo": "porcion"},
+            {"alimento": "Aguacate", "cantidad": 50, "tipo": "gramos"},
+            {"alimento": "Huevo entero (100 gr)", "cantidad": 100, "tipo": "gramos"}
+        ]
+    ],
+
+    # Almuerzo
+    ["Pavo muslo y tomate", 
+     "almuerzo",
+        [
+            {"alimento": "Pavo muslo", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Tomate", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Aceite de oliva", "cantidad": 1, "tipo": "porcion"}
+        ]
+    ],
+
+    # Cena
+    ["Merluza con arroz integral y guisantes", 
+     "cena",
+        [
+            {"alimento": "Merluza", "cantidad": 200, "tipo": "gramos"},
+            {"alimento": "Arroz", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Guisantes frescos", "cantidad": 100, "tipo": "gramos"},
+            {"alimento": "Aceite de oliva", "cantidad": 1, "tipo": "porcion"}
+        ]
+    ]
+]
