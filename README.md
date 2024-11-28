@@ -24,7 +24,7 @@ source venv/Scripts/activate
 ### Terminal de VSCode (Windows):
 
 ```bash
-.env\Scriptsctivate
+.\env\Scripts\ctivate
 ```
 
 ### Desactivar el entorno virtual
