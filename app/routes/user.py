@@ -13,6 +13,7 @@ from app.database import db
 
 user_bp = Blueprint("user", __name__, url_prefix="/api/user")
 
+
 @user_bp.route("/create", methods=["POST"])
 def create():
     """
@@ -115,7 +116,8 @@ def create():
         db.session.rollback()  # Hacer rollback en caso de error
         return jsonify({"message": f"Ocurrió un error al crear el usuario: {str(e)}"}), 500  # 500 Internal Server Error
 
-@user_bp.route("/profile", methods=["GET"]) 
+
+@user_bp.route("/profile", methods=["GET"])
 @token_required
 def get_profile(current_user_id):
     """
@@ -195,8 +197,85 @@ def get_profile(current_user_id):
             message:
               type: string
               example: "Usuario no encontrado" 
-    """    
+    """
     user = User.query.get(current_user_id)
     if user:
         return UserSchema().dump(user), 200
     return jsonify({"message": "Usuario no encontrado."}), 404
+
+
+@user_bp.route("/profile/nutritionist", methods=["GET"])
+@token_required
+def get_nutritionist_profile(current_user_id):
+    """
+    Obtener el perfil de un nutricionista.
+    ---
+    tags:
+      - Usuarios
+    parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+        description: Token JWT del usuario
+        example: "Bearer <tu_token_aqui>"
+    responses:
+      200:
+        description: Nutricionista encontrado
+        schema:
+          type: object
+          properties:
+            message:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: ID del nutricionista
+                  example: 2
+                name:
+                  type: string
+                  description: Nombre del nutricionista
+                  example: "Juan Marcos"
+                lastname:
+                  type: string
+                  description: Apellido del nutricionista
+                  example: "Gonzales Pérez"
+                telephone:
+                  type: string
+                  description: Teléfono del nutricionista
+                  example: "74646527"
+                email:
+                  type: string
+                  description: Correo electrónico del nutricionista
+                  example: "juan@gmail.com"
+                url_image:
+                  type: string
+                  description: URL de la imagen del perfil
+                  example: "https://res.cloudinary.com/dnkvrqfus/image/upload/v1700017356/user_zmcosz.jpg"
+                role:
+                  type: string
+                  description: Rol del usuario
+                  example: "nutritionist"
+      404:
+        description: Error al obtener el perfil.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Nutricionista no encontrado"
+    """
+    user = User.query.get(current_user_id)
+
+    if user and user.type == "nutritionist":
+        return jsonify({
+            "id": user.id,
+            "name": user.name,
+            "lastname": user.lastname,
+            "telephone": user.telephone,
+            "email": user.email,
+            "url_image": user.url_image,
+            "type": user.type
+        }), 200
+
+    return jsonify({"message": "Nutricionista no encontrado."}), 404

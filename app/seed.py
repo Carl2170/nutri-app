@@ -7,12 +7,13 @@ from datetime import datetime
 from app.database import db
 from app.models.meal import Meal
 from app.models.physical_activity import PhysicalActivity
-from app.models.user import User
+from app.models.user import User, Nutritionist
 from app.models.health_profile import HealthProfile
 from app.models.food import Food
 from app.models.meal_food import MealFood
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
+from werkzeug.security import generate_password_hash
 
 
 #función para cargar datos de tipos de actividad fisica predefinidas en la base de datos
@@ -222,13 +223,16 @@ def seed_users_health_profile():
     ]
      
     for user_data in users:
+        # Encriptar la contraseña antes de crear el usuario
+        hashed_password = generate_password_hash(user_data["password"])
+
         # Crear usuario
         user = User(
             name=user_data["name"],
             lastname=user_data["lastname"],
             telephone=user_data["telephone"],
             email=user_data["email"],
-            password=user_data["password"],
+            password=hashed_password,
             url_image=user_data["url_image"],
         )
         db.session.add(user)
@@ -253,6 +257,23 @@ def seed_users_health_profile():
         db.session.commit()
 
         print("Usuarios y perfiles de salud cargados exitosamente.")
+
+    # Crear un nutricionista
+    nutritionist = Nutritionist(
+        name="Marcos",
+        lastname="Lopez",
+        telephone="555-1122",
+        email="marcos@gmail.com",
+        password=generate_password_hash("123456"),  # Asegúrate de hashear la contraseña
+        url_image="https://res.cloudinary.com/dnkvrqfus/image/upload/v1700017356/user_zmcosz.jpg",
+        specialty="Nutrición Clínica"
+    )
+
+    # Agregar a la base de datos
+    db.session.add(nutritionist)
+    db.session.commit()
+
+    print(f"Nutricionista creado exitosamente.")
 
 
 #funcion para dar formato comidas
@@ -453,7 +474,9 @@ def seed_food_measures():
         'Parmesano': 'gramo',
         'Queso de Oveja': 'gramo',
         'Requesón': 'gramo',
-        'Roquefort': 'gramo'
+        'Roquefort': 'gramo',
+        'Chocolate': 'gramo',
+        'Miel': 'gramo',
     }
 
     for food_name, measure in foods_to_update.items():

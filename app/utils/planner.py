@@ -159,6 +159,7 @@ class Planner:
             # Verificar si la categoría tiene una unidad específica (gramos o unidad)
             if categoria in categorias_unidad:
                 unidad = food.measure
+                # unidad = categorias_unidad[categoria]
             else:
                 # Si no está en las categorías definidas, usamos la unidad por defecto (gramos)
                 unidad = "gramo"

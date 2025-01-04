@@ -9,6 +9,7 @@ from app.routes.food import food_bp
 from app.routes.physical_activity import physical_activity_bp
 from app.routes.meal import meal_bp
 from app.routes.plan import plan_meal_bp
+from app.routes.meal_food import meal_food_bp
 
 from app.extensions import ma
 from app.routes.auth import auth_bp
@@ -43,6 +44,7 @@ def create_app():
     app.register_blueprint(food_bp)
     app.register_blueprint(physical_activity_bp)
     app.register_blueprint(meal_bp)
+    app.register_blueprint(meal_food_bp)
     app.register_blueprint(plan_meal_bp)
 
     # Registrar comandos CLI

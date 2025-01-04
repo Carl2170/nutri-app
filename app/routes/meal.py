@@ -194,3 +194,183 @@ def calculate_carbohydrates(food):
             print(f"Food '{foo['alimento']}' no encontrado en la base de datos.")
     return carbohydrates
 
+
+@meal_bp.route('/meals/all', methods=['GET'])
+def get_all_meals():
+    """
+    Endpoint para obtener todas las comidas.
+    """
+    try:
+        # Obtener todas las comidas de la base de datos
+        meals = Meal.query.all()
+
+        # Formatear las comidas en un JSON
+        meals_list = [
+            {
+                "id": meal.id,
+                "name": meal.name,
+                "status": meal.status,
+                "meal_type": meal.meal_type,
+                "total_calories": meal.total_calories,
+                "total_proteins": meal.total_proteins,
+                "total_fats": meal.total_fats,
+                "total_carbohydrates": meal.total_carbohydrates,
+            }
+            for meal in meals
+        ]
+
+        return jsonify(meals_list), 200
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return jsonify({"error": "Error al obtener las comidas"}), 500
+
+
+@meal_bp.route('/meals', methods=['POST'])
+def create_meal():
+    """
+    Endpoint para crear una nueva comida.
+    """
+    try:
+        data = request.get_json()
+
+        # Validar que todos los campos requeridos estén presentes
+        required_fields = [
+            "name", "status", "meal_type",
+            "total_calories", "total_proteins",
+            "total_fats", "total_carbohydrates"
+        ]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"El campo '{field}' es requerido"}), 400
+
+        # Crear un nuevo objeto Meal
+        new_meal = Meal(
+            name=data["name"],
+            status=data["status"],
+            meal_type=data["meal_type"],
+            total_calories=data["total_calories"],
+            total_proteins=data["total_proteins"],
+            total_fats=data["total_fats"],
+            total_carbohydrates=data["total_carbohydrates"],
+        )
+
+        # Agregar y guardar en la base de datos
+        db.session.add(new_meal)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Comida creada exitosamente",
+            "meal": {
+                "id": new_meal.id,
+                "name": new_meal.name,
+                "status": new_meal.status,
+                "meal_type": new_meal.meal_type,
+                "total_calories": new_meal.total_calories,
+                "total_proteins": new_meal.total_proteins,
+                "total_fats": new_meal.total_fats,
+                "total_carbohydrates": new_meal.total_carbohydrates,
+            }
+        }), 201
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return jsonify({"error": "Error al crear la comida"}), 500
+
+
+@meal_bp.route('/meals/<int:meal_id>', methods=['PUT'])
+def update_meal(meal_id):
+    """
+    Endpoint para actualizar una comida existente.
+    """
+    try:
+        data = request.get_json()
+
+        # Buscar la comida por ID
+        meal = Meal.query.get(meal_id)
+        if not meal:
+            return jsonify({"error": "Comida no encontrada"}), 404
+
+        # Actualizar los campos de la comida
+        meal.name = data.get("name", meal.name)
+        meal.status = data.get("status", meal.status)
+        meal.meal_type = data.get("meal_type", meal.meal_type)
+        meal.total_calories = data.get("total_calories", meal.total_calories)
+        meal.total_proteins = data.get("total_proteins", meal.total_proteins)
+        meal.total_fats = data.get("total_fats", meal.total_fats)
+        meal.total_carbohydrates = data.get("total_carbohydrates", meal.total_carbohydrates)
+
+        # Guardar los cambios en la base de datos
+        db.session.commit()
+
+        return jsonify({
+            "message": "Comida actualizada exitosamente",
+            "meal": {
+                "id": meal.id,
+                "name": meal.name,
+                "status": meal.status,
+                "meal_type": meal.meal_type,
+                "total_calories": meal.total_calories,
+                "total_proteins": meal.total_proteins,
+                "total_fats": meal.total_fats,
+                "total_carbohydrates": meal.total_carbohydrates,
+            }
+        }), 200
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return jsonify({"error": "Error al actualizar la comida"}), 500
+
+
+@meal_bp.route('/meals/<int:meal_id>/foods/', methods=['GET'])
+def get_foods_by_meal(meal_id):
+    """
+    Endpoint para obtener los alimentos asociados a una comida específica.
+    """
+    try:
+        # Buscar la comida por su ID
+        meal = Meal.query.get(meal_id)
+
+        # Validar si existe
+        if not meal:
+            return jsonify({"error": "Comida no encontrada"}), 404
+
+        # Obtener las relaciones MealFood para esta comida
+        meal_foods = MealFood.query.filter_by(meal_id=meal_id).all()
+
+        # Formatear los datos de los alimentos
+        foods = [
+            {
+                "id": meal_food.food.id,
+                "name": meal_food.food.name,
+                "calories": meal_food.food.calories,
+                "proteins": meal_food.food.proteins,
+                "fats": meal_food.food.fats,
+                "carbohydrates": meal_food.food.carbohydrates,
+                "image_url": meal_food.food.image_url,
+                "description": meal_food.food.description,
+                "benefits": meal_food.food.benefits,
+                "category": meal_food.food.category,
+                "quantity": meal_food.quantity,
+                "type_quantity": meal_food.type_quantity,
+            }
+            for meal_food in meal_foods
+        ]
+
+        return jsonify({
+            "meal": {
+                "id": meal.id,
+                "name": meal.name,
+                "meal_type": meal.meal_type,
+                "total_calories": meal.total_calories,
+                "total_proteins": meal.total_proteins,
+                "total_fats": meal.total_fats,
+                "total_carbohydrates": meal.total_carbohydrates,
+                "status": meal.status,
+            },
+            "foods": foods
+        }), 200
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return jsonify({"error": "Error al obtener los alimentos"}), 500
+
+
+

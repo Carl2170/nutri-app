@@ -751,6 +751,7 @@ Para poblar la base de datos con los datos iniciales, ejecuta uno o varios de es
 flask seed-physical-activities-db
 flask seed-users-health-profiles-db
 flask seed-food-db
+flask seed-measure-food-db
 
 ```
 

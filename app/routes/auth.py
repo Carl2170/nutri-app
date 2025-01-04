@@ -7,6 +7,7 @@ from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 
 from app.models.user import User
+
 load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -53,6 +54,7 @@ def token_required(f):
         return f(current_user_id, *args, **kwargs)
 
     return decorated
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -118,7 +120,7 @@ def login():
     data = request.get_json()
 
     # Campos requeridos
-    required_fields = ['email','password']
+    required_fields = ['email', 'password']
 
     if not all(field in data for field in required_fields):
         return jsonify({"message": "Todos los campos son requeridos."}), 400
@@ -129,23 +131,46 @@ def login():
     print(password)
     # Busca el usuario en la base de datos
     user_login = User.query.filter_by(email=email).first()
-    
+
     if user_login is None:
         return jsonify({"message": "Usuario no encontrado."}), 404
 
     # # Verifica la contraseña
-    # if not check_password_hash(user_login.password, password):
-    #     return jsonify({"message": "Contraseña incorrecta."}), 401
-    if user_login.password != password:
+    if not check_password_hash(user_login.password, password):
         return jsonify({"message": "Contraseña incorrecta."}), 401
+    # if user_login.password != password:
+    #     return jsonify({"message": "Contraseña incorrecta."}), 401
+
+    # Obtiene el tipo de usuario
+    user_type = user_login.type
+
     # Genera el token JWT
     token = generate_jwt(user_login.id)
 
     return jsonify({
         "message": "Inicio de sesión exitoso!",
         "token": token,
-        "user_id": user_login.id
+        "user_id": user_login.id,
+        "user_type": user_type
     }), 200
 
 
-     
+@auth_bp.route('/verify-token', methods=['GET'])
+def verify_token():
+    token = None
+
+    # Verifica si el token está en las cabeceras
+    if 'Authorization' in request.headers:
+        token = request.headers['Authorization'].split(" ")[1]
+
+    if not token:
+        return jsonify({'message': 'Token is missing!'}), 401
+
+    try:
+        # Decodifica el token usando la clave secreta
+        data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return jsonify({'message': 'Token is valid!', 'data': data}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token!'}), 401
