@@ -14,7 +14,7 @@ class User(db.Model):
 
     #health_profile = db.relationship('HealthProfile', backref='user', uselist=False, cascade="all, delete-orphan")
     health_profile = db.relationship('HealthProfile', back_populates='user', uselist=False, cascade="all, delete-orphan")
-
+    plans = db.relationship('Plan', backref='plan')
     def __repr__(self):
         return (
             f'User(id={self.id}, '

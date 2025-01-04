@@ -7,11 +7,13 @@ from app.routes.health_profile import health_profile_bp
 from app.routes.health_objective import health_objective_bp
 from app.routes.food import food_bp
 from app.routes.physical_activity import physical_activity_bp
+from app.routes.meal import meal_bp
+from app.routes.plan import plan_meal_bp
 
 from app.extensions import ma
 from app.routes.auth import auth_bp
 from app.database import create_database, configure_app
-from app.seed import seed_data, seed_users_health_profile, seed_food, seed_meal
+from app.seed import seed_data, seed_users_health_profile, seed_food, seed_meal, seed_food_measures
 
 
 def create_app():
@@ -40,6 +42,8 @@ def create_app():
     app.register_blueprint(health_objective_bp)
     app.register_blueprint(food_bp)
     app.register_blueprint(physical_activity_bp)
+    app.register_blueprint(meal_bp)
+    app.register_blueprint(plan_meal_bp)
 
     # Registrar comandos CLI
     register_cli_commands(app)
@@ -90,3 +94,13 @@ def register_cli_commands(app):
         """
         seed_meal()
         print("Base de datos inicializada con alimentos.")
+    
+    @app.cli.command("seed-measure-food-db")
+    @with_appcontext
+    def seed_measure_food_db():
+        """
+        Comando CLI para cargar la columna "measure" de la tabla Food.
+        """
+        seed_food_measures()
+        print("Base de datos inicializada con alimentos.")
+
