@@ -5,8 +5,10 @@ from app.database import db
 from app.models.meal import Meal
 from app.models.food import Food
 from app.models.meal_food import MealFood 
+from app.models.plan import Plan
 from app.models.plan_meal import PlanMeal 
 
+from app.routes.auth import token_required
 from app.utils.nutrion_model import *
 
 meal_bp = Blueprint("meal", __name__,url_prefix="/api/meal")
@@ -114,7 +116,6 @@ def save_meal(objective,type, calories, food, plan_id):
         total_carbohydrates=carbohydrates,
     )
 
-
     db.session.add(meal)
     db.session.commit()
 
@@ -144,13 +145,48 @@ def save_plan_meal(meal, plan_id, date,day):
 
     return plan_meal
 
-def get_calories_plan(plan_id):
-    meals = PlanMeal.query.filter_by(plan_id=plan_id).all()
-    total_calories = 0
+
+@meal_bp.route("/calculate-calories/<int:id>", methods=["GET"])
+def get_calories_plan(id):
+    """
+    Calcula las calorías totales de un plan.
+    ---
+    tags:
+      - Plan Nutricional
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: ID del plan nutricional.
+    responses:
+      200:
+        description: Calorías totales calculadas exitosamente.
+        schema:
+          type: object
+          properties:
+            total_calories:
+              type: number
+              format: float
+              example: 4500.75
+      404:
+        description: No se encontraron comidas para el plan especificado.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "No se encontraron comidas para el plan especificado."
+    """
+    meals = PlanMeal.query.filter_by(plan_id=id).all()
+    if not meals:
+        return jsonify({"error": "No se encontraron comidas para el plan especificado."}), 404
+
+    total_calories = 0.00
     for meal in meals:
         me = Meal.query.filter_by(id=meal.meal_id).first()
         total_calories += me.total_calories 
-    return total_calories       
+    return jsonify({"total_calories": total_calories}), 200       
 
 def calculate_proteins(food):
     print("comida recibida:", food)
@@ -194,3 +230,83 @@ def calculate_carbohydrates(food):
             print(f"Food '{foo['alimento']}' no encontrado en la base de datos.")
     return carbohydrates
 
+@meal_bp.route("/finish-meal", methods=["POST"])
+@token_required
+def finish_meal(current_user_id):
+    """
+    Finalizar una comida.
+    Cambia el estado de la comida especificada a True y actualiza las calorías totales del plan asociado.
+    ---
+    tags:
+      - Comidas
+    parameters:
+      - in: body
+        name: body
+        description: ID de la comida que se desea finalizar.
+        required: true
+        schema:
+          type: object
+          properties:
+            meal_id:
+              type: integer
+              example: 1
+    responses:
+      200:
+        description: Estado de la comida cambiado exitosamente y calorías del plan actualizadas.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Estado de comida cambiada a True."
+      400:
+        description: El campo 'meal_id' no fue proporcionado.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "El campo 'meal_id' es requerido."
+      404:
+        description: No se encontró una comida con el ID especificado y estado False.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "No existe la comida con id: 1 y estado: False"
+    """
+    # Obtener los datos de la solicitud
+    data = request.get_json()
+    meal_id = data.get("meal_id")
+
+    if not meal_id:
+        return jsonify({"error": "El campo 'plan_id' es requerido."}), 400
+    
+    meal= Meal.query.filter_by(id=meal_id,status=False).first()
+    
+    if not meal:
+        return jsonify({"error": "No existe la comida con id: {meal_id} y estado: False"}), 404
+
+    # Cambiar el estado del plan a True
+    meal.status = True
+    db.session.commit()
+
+    # obtener el plan al que pertenece la comida
+    plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
+    
+    # al cambiar el estado de la comida se actualiza el total de calorias del plan
+    act_calories(meal.total_calories, plan.plan_id)
+
+    return jsonify({"message": "estado de comida cambiada a True."}), 200
+
+# actualiza las calorias del plan
+def act_calories( cal, plan_id):
+  plan = Plan.query.filter_by(id=plan_id).first()
+  
+  if not plan:
+    return jsonify({"error": "No existe el plan"}), 404
+  
+  plan.calories = plan.calories - cal
+  db.session.commit()
+ 

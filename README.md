@@ -186,6 +186,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 91,
+            "meal_status": true
             "meal_type": "desayuno",
             "name": "Perder peso",
             "total_calories": 542.5,
@@ -269,6 +270,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 92,
+            "meal_status": false
             "meal_type": "almuerzo",
             "name": "Perder peso",
             "total_calories": 297.0,
@@ -310,6 +312,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 93,
+            "meal_status": false
             "meal_type": "cena",
             "name": "Perder peso",
             "total_calories": 759.4774,
@@ -393,6 +396,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 94,
+            "meal_status": false
             "meal_type": "desayuno",
             "name": "Perder peso",
             "total_calories": 436.34999999999997,
@@ -476,6 +480,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 95,
+            "meal_status": false,
             "meal_type": "almuerzo",
             "name": "Perder peso",
             "total_calories": 694.2,
@@ -531,6 +536,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 96,
+            "meal_status": false
             "meal_type": "cena",
             "name": "Perder peso",
             "total_calories": 759.4431,
@@ -586,6 +592,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 97,
+            "meal_status": false
             "meal_type": "desayuno",
             "name": "Perder peso",
             "total_calories": 542.4788000000001,
@@ -669,6 +676,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 98,
+            "meal_status": false
             "meal_type": "almuerzo",
             "name": "Perder peso",
             "total_calories": 415.0,
@@ -710,6 +718,7 @@ A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API c
                 }
             ],
             "meal_id": 99,
+            "meal_status": false
             "meal_type": "cena",
             "name": "Perder peso",
             "total_calories": 759.463,

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from app.models.food import Food
 from app.routes.plan import *
-from app.routes.meal import *
+from app.routes.meal import save_meal, save_plan_meal
 MODELO = joblib.load("templates/modelo_momento.pkl")
 SCALER = joblib.load("templates/scaler.pkl")
 LE_MOMENTO = joblib.load("templates/label_encoder_momento.pkl")
@@ -166,6 +166,9 @@ class Planner:
             if unidad == "unidad":
             # Si el alimento está en una categoría de unidad (como frutas), asigna la cantidad a 1
               cantidad_final = 1
+
+            if unidad == None:
+                unidad = "gramo"
             else:
             # Si no es una unidad, calcula según los gramos
                 if unidad == "gramo":
@@ -196,8 +199,6 @@ class Planner:
             print(f"Comida armada: {seleccion}, Calorías totales: {total_calorias:.2f}")
 
         return seleccion
-
-
 
     def distribuir_comidas(self, calorias_totales, dias, objetivo, plan_id):
         calorias_diarias = calorias_totales / dias
