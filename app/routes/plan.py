@@ -88,7 +88,6 @@ def generate_plan_1(current_user_id):
                         example: "Error al generar el plan de comidas"
     """
     data = request.get_json()
-   # client_id = data["id"]
     objective = data["objective"]
     numbers_days = data["number-days"]
     planner = Planner()

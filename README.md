@@ -24,7 +24,7 @@ source venv/Scripts/activate
 ### Terminal de VSCode (Windows):
 
 ```bash
-.env\Scriptsctivate
+.\env\Scripts\ctivate
 ```
 
 ### Desactivar el entorno virtual
@@ -103,7 +103,9 @@ flask db upgrade
 Este proyecto incluye varios comandos CLI registrados para facilitar la inicialización de datos en la base de datos. Se tiene que haber ejecutado las migraciones.
 
 ### Vista del plan en JSON:
+A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API cuando se obtiene un plan de comidas exitosamente. plan de 3 dias cada dia con desayuno, almuerzo, cena
 
+```json
 {
     "calories": 6509.625,
     "date_generation": "2025-01-03T00:38:07",
@@ -729,6 +731,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
     "plan_id": 15,
     "status": "en progreso"
 }
+```
 
 ### Cargar datos de actividades físicas:
 
