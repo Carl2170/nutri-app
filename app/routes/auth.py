@@ -125,23 +125,26 @@ def login():
 
     email = data['email']
     password = data['password']
-
+    print(email)
+    print(password)
     # Busca el usuario en la base de datos
     user_login = User.query.filter_by(email=email).first()
     
     if user_login is None:
         return jsonify({"message": "Usuario no encontrado."}), 404
 
-    # Verifica la contraseña
-    if not check_password_hash(user_login.password, password):
+    # # Verifica la contraseña
+    # if not check_password_hash(user_login.password, password):
+    #     return jsonify({"message": "Contraseña incorrecta."}), 401
+    if user_login.password != password:
         return jsonify({"message": "Contraseña incorrecta."}), 401
-
     # Genera el token JWT
     token = generate_jwt(user_login.id)
 
     return jsonify({
         "message": "Inicio de sesión exitoso!",
-        "token": token
+        "token": token,
+        "user_id": user_login.id
     }), 200
 
 
