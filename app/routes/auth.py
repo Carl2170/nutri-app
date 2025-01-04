@@ -134,10 +134,11 @@ def login():
         return jsonify({"message": "Usuario no encontrado."}), 404
 
     # # Verifica la contraseña
-    # if not check_password_hash(user_login.password, password):
-    #     return jsonify({"message": "Contraseña incorrecta."}), 401
-    if user_login.password != password:
+    if not check_password_hash(user_login.password, password):
         return jsonify({"message": "Contraseña incorrecta."}), 401
+    
+    #if user_login.password != password:
+    #     return jsonify({"message": "Contraseña incorrecta."}), 401
     # Genera el token JWT
     token = generate_jwt(user_login.id)
 
