@@ -103,7 +103,9 @@ flask db upgrade
 Este proyecto incluye varios comandos CLI registrados para facilitar la inicialización de datos en la base de datos. Se tiene que haber ejecutado las migraciones.
 
 ### Vista del plan en JSON:
+A continuación se muestra un ejemplo de la respuesta JSON que devuelve la API cuando se obtiene un plan de comidas exitosamente.
 
+```json
 {
     "calories": 6509.625,
     "date_generation": "2025-01-03T00:38:07",
