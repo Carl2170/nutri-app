@@ -41,7 +41,7 @@ def generate_plan():
 #con modelo de regresion
 @plan_meal_bp.route("/generate-plan1", methods=["POST"])
 @token_required
-def generate_plan_1():
+def generate_plan_1(current_user_id):
     """
     Generar un plan de comidas personalizado para un usuario específico. 
     Esta ruta recibe los datos del usuario y genera un plan de comidas basado 
@@ -92,7 +92,7 @@ def generate_plan_1():
                         example: "Error al generar el plan de comidas"
     """
     data = request.get_json()
-    client_id = data["id"]
+    client_id = current_user_id
     objective = data["objective"]
     numbers_days = data["number-days"]
     planner = Planner()
