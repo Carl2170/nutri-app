@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from app.models.food import Food
 from app.routes.plan import *
-from app.routes.meal import *
+from app.routes.meal import save_meal, save_plan_meal
+
 MODELO = joblib.load("templates/modelo_momento.pkl")
 SCALER = joblib.load("templates/scaler.pkl")
 LE_MOMENTO = joblib.load("templates/label_encoder_momento.pkl")
@@ -38,7 +39,8 @@ class Planner:
         self.df_food = df_food
         self.le_momento = le_momento
         self.le_category = le_category
-        self.calories_t =0
+        self.calories_t = 0
+
     # 1. Calcular la TMB (Tasa Metabólica Basal)
     def tmb(self, peso, altura, edad, genero, objetivo, PAL):
         """
@@ -51,7 +53,7 @@ class Planner:
             genero (str): Género ('masculino' o 'femenino').
             objetivo (str): Objetivo ('perder peso', 'mantener peso', 'ganar masa muscular').
             PAL (float): Nivel de actividad física (valor de 1.2 a 2.5).
-        
+
         Returns:
             float: Calorías necesarias para el objetivo.
         """
@@ -88,25 +90,25 @@ class Planner:
             objetivo (str): Objetivo ('perder peso', 'mantener peso', 'ganar masa muscular').
             PAL (float): Nivel de actividad física.
             dias (int): Número de días del plan nutricional.
-        
+
         Returns:
             float: Calorías totales para el plan de días.
         """
         # Calcular el TDEE
         tdee = self.tmb(peso, altura, edad, genero, objetivo, PAL)
         print(f"Calorías necesarias para el plan nutricional por día: {tdee}")
-        
+
         # Calcular calorías totales para los días del plan
         calorias_totales = tdee * dias
         print(f"Calorías totales para el plan de {dias} días: {calorias_totales}")
-        
+
         return calorias_totales
 
     def armar_comida_ajustada(self, momento, calorias_objetivo, proporciones_macros, plan_id):
         """
         Arma una comida ajustada a las calorías objetivo y proporciones de macronutrientes, basándose en la categoría.
         """
-        #print(f"\nMomento: {momento}, Calorías objetivo: {calorias_objetivo}")
+        # print(f"\nMomento: {momento}, Calorías objetivo: {calorias_objetivo}")
         print(f"\nMomento: {momento}")
         momento_transformado = self.le_momento.transform([momento])[0]
 
@@ -138,7 +140,7 @@ class Planner:
 
         while total_calorias < calorias_objetivo * 0.9:
             alimento_seleccionado = df_momento.sample(1).iloc[0]
-            food= Food.query.filter_by(name=alimento_seleccionado["name"]).first() 
+            food = Food.query.filter_by(name=alimento_seleccionado["name"]).first()
 
             if alimento_seleccionado["name"] in alimentos_usados:
                 continue
@@ -159,16 +161,18 @@ class Planner:
             # Verificar si la categoría tiene una unidad específica (gramos o unidad)
             if categoria in categorias_unidad:
                 unidad = food.measure
-                # unidad = categorias_unidad[categoria]
             else:
                 # Si no está en las categorías definidas, usamos la unidad por defecto (gramos)
                 unidad = "gramo"
 
             if unidad == "unidad":
-            # Si el alimento está en una categoría de unidad (como frutas), asigna la cantidad a 1
-              cantidad_final = 1
+                # Si el alimento está en una categoría de unidad (como frutas), asigna la cantidad a 1
+                cantidad_final = 1
+
+            if unidad == None:
+                unidad = "gramo"
             else:
-            # Si no es una unidad, calcula según los gramos
+                # Si no es una unidad, calcula según los gramos
                 if unidad == "gramo":
                     cantidad_final = round(cantidad_requerida, 2)
                 elif unidad == "mililitro":
@@ -198,8 +202,6 @@ class Planner:
 
         return seleccion
 
-
-
     def distribuir_comidas(self, calorias_totales, dias, objetivo, plan_id):
         calorias_diarias = calorias_totales / dias
         print(f"Calorías diarias para el plan: {calorias_diarias}")
@@ -220,7 +222,7 @@ class Planner:
             raise ValueError(f"Objetivo '{objetivo}' no es válido.")
 
         proporciones_macros = macronutrientes[objetivo]
-        date =datetime.now()
+        date = datetime.now()
 
         plan_comidas = []
 
@@ -228,25 +230,24 @@ class Planner:
             comidas_dia = {}
             for momento, proporcion_comida in proporciones_comidas.items():
                 calorias_objetivo = calorias_diarias * proporcion_comida
-                comida = self.armar_comida_ajustada(momento, calorias_objetivo, proporciones_macros,plan_id)
+                comida = self.armar_comida_ajustada(momento, calorias_objetivo, proporciones_macros, plan_id)
                 print(f"----------------------------------")
                 print(comida)
                 print(f"----------------------------------")
-                
+
                 # registra la comida y los alimentos que pertenecen a ella
-                meal=save_meal(objetivo,momento,self.calories_t,comida,plan_id)
-   
-                # guarda la relacion de las comidas con el plan (el plan ya se creó)         
-                #plan_meal= save_plan_meal(meal, plan_id, date, day)
-                plan_meal = save_plan_meal(meal, plan_id, date.strftime('%Y-%m-%d %H:%M:%S'), day+1)
-                
-                #date = date.strftime('%Y-%m-%d %H:%M:%S')
+                meal = save_meal(objetivo, momento, self.calories_t, comida, plan_id)
+
+                # guarda la relacion de las comidas con el plan (el plan ya se creó)
+                # plan_meal= save_plan_meal(meal, plan_id, date, day)
+                plan_meal = save_plan_meal(meal, plan_id, date.strftime('%Y-%m-%d %H:%M:%S'), day + 1)
+
+                # date = date.strftime('%Y-%m-%d %H:%M:%S')
 
                 comidas_dia[momento] = comida
-            
-            date += timedelta(days=1) 
+
+            date += timedelta(days=1)
             plan_comidas.append(comidas_dia)
 
         return plan_comidas
-
 

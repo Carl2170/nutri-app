@@ -7,7 +7,6 @@ from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 
 from app.models.user import User
-
 load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
