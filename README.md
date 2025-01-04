@@ -184,6 +184,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 91,
+            "meal_status": true
             "meal_type": "desayuno",
             "name": "Perder peso",
             "total_calories": 542.5,
@@ -267,6 +268,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 92,
+            "meal_status": false
             "meal_type": "almuerzo",
             "name": "Perder peso",
             "total_calories": 297.0,
@@ -308,6 +310,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 93,
+            "meal_status": false
             "meal_type": "cena",
             "name": "Perder peso",
             "total_calories": 759.4774,
@@ -391,6 +394,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 94,
+            "meal_status": false
             "meal_type": "desayuno",
             "name": "Perder peso",
             "total_calories": 436.34999999999997,
@@ -474,6 +478,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 95,
+            "meal_status": false,
             "meal_type": "almuerzo",
             "name": "Perder peso",
             "total_calories": 694.2,
@@ -529,6 +534,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 96,
+            "meal_status": false
             "meal_type": "cena",
             "name": "Perder peso",
             "total_calories": 759.4431,
@@ -584,6 +590,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 97,
+            "meal_status": false
             "meal_type": "desayuno",
             "name": "Perder peso",
             "total_calories": 542.4788000000001,
@@ -667,6 +674,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 98,
+            "meal_status": false
             "meal_type": "almuerzo",
             "name": "Perder peso",
             "total_calories": 415.0,
@@ -708,6 +716,7 @@ Este proyecto incluye varios comandos CLI registrados para facilitar la iniciali
                 }
             ],
             "meal_id": 99,
+            "meal_status": false
             "meal_type": "cena",
             "name": "Perder peso",
             "total_calories": 759.463,
