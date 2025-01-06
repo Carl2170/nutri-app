@@ -239,19 +239,101 @@ def calculate_carbohydrates(food):
     return carbohydrates
 
 
+# @meal_bp.route("/finish-meal", methods=["POST"])
+# @token_required
+# def finish_meal(current_user_id):
+#     """
+#     Finalizar una comida.
+#     Cambia el estado de la comida especificada a True y actualiza las calorías totales del plan asociado.
+#     ---
+#     tags:
+#       - Comidas
+#     parameters:
+#       - in: body
+#         name: body
+#         description: ID de la comida que se desea finalizar.
+#         required: true
+#         schema:
+#           type: object
+#           properties:
+#             meal_id:
+#               type: integer
+#               example: 1
+#     responses:
+#       200:
+#         description: Estado de la comida cambiado exitosamente y calorías del plan actualizadas.
+#         schema:
+#           type: object
+#           properties:
+#             message:
+#               type: string
+#               example: "Estado de comida cambiada a True."
+#       400:
+#         description: El campo 'meal_id' no fue proporcionado.
+#         schema:
+#           type: object
+#           properties:
+#             error:
+#               type: string
+#               example: "El campo 'meal_id' es requerido."
+#       404:
+#         description: No se encontró una comida con el ID especificado y estado False.
+#         schema:
+#           type: object
+#           properties:
+#             error:
+#               type: string
+#               example: "No existe la comida con id: 1 y estado: False"
+#     """
+#     # Obtener los datos de la solicitud
+#     data = request.get_json()
+#     meal_id = data.get("meal_id")
+#
+#     if not meal_id:
+#         return jsonify({"error": "El campo 'meal_id' es requerido."}), 400
+#
+#     meal = Meal.query.filter_by(id=meal_id, status=False).first()
+#
+#     if not meal:
+#         return jsonify({"error": "No existe la comida con id: {meal_id} y estado: False"}), 404
+#
+#     # Cambiar el estado del plan a True
+#     meal.status = True
+#     db.session.commit()
+#
+#     # obtener el plan al que pertenece la comida
+#     plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
+#
+#     # al cambiar el estado de la comida se actualiza el total de calorias del plan
+#     act_calories(meal.total_calories, plan.plan_id)
+#
+#     return jsonify({"message": "estado de comida cambiada a True."}), 200
+#
+#
+# # actualiza las calorias del plan
+# def act_calories(cal, plan_id):
+#     plan = Plan.query.filter_by(id=plan_id).first()
+#
+#     if not plan:
+#         return jsonify({"error": "No existe el plan"}), 404
+#
+#     plan.calories = plan.calories - cal
+#     db.session.commit()
+#
+
 @meal_bp.route("/finish-meal", methods=["POST"])
 @token_required
 def finish_meal(current_user_id):
     """
-    Finalizar una comida.
-    Cambia el estado de la comida especificada a True y actualiza las calorías totales del plan asociado.
+    Finalizar o desmarcar una comida.
+    Cambia el estado de la comida especificada a True (consumida) o False (desmarcada) y actualiza las calorías del plan asociado.
     ---
     tags:
       - Comidas
     parameters:
       - in: body
         name: body
-        description: ID de la comida que se desea finalizar.
+        description: ID de la comida que se desea finalizar o desmarcar.
         required: true
         schema:
           type: object
@@ -290,34 +372,46 @@ def finish_meal(current_user_id):
     meal_id = data.get("meal_id")
 
     if not meal_id:
-        return jsonify({"error": "El campo 'plan_id' es requerido."}), 400
+        return jsonify({"error": "El campo 'meal_id' es requerido."}), 400
 
-    meal = Meal.query.filter_by(id=meal_id, status=False).first()
+    # Buscar la comida por ID y su estado
+    meal = Meal.query.filter_by(id=meal_id).first()
 
     if not meal:
-        return jsonify({"error": "No existe la comida con id: {meal_id} y estado: False"}), 404
+        return jsonify({"error": f"No existe la comida con id: {meal_id}"}), 404
 
-    # Cambiar el estado del plan a True
+    # Si la comida está marcada como consumida (status=True), desmarcarla (status=False)
+    if meal.status:
+        meal.status = False
+        db.session.commit()
+
+        # Obtener el plan asociado a la comida y actualizar las calorías
+        plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
+        if plan:
+            act_calories(meal.total_calories, plan.plan_id)  # Se suman las calorías al plan
+
+        return jsonify({"message": "Comida desmarcada y calorías actualizadas."}), 200
+
+    # Si la comida no está marcada como consumida, cambiarla a consumida (status=True)
     meal.status = True
     db.session.commit()
 
-    # obtener el plan al que pertenece la comida
+    # Obtener el plan asociado a la comida y actualizar las calorías
     plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
+    if plan:
+        act_calories(-meal.total_calories, plan.plan_id)  # Se restan las calorías al plan
 
-    # al cambiar el estado de la comida se actualiza el total de calorias del plan
-    act_calories(meal.total_calories, plan.plan_id)
-
-    return jsonify({"message": "estado de comida cambiada a True."}), 200
+    return jsonify({"message": "Comida marcada como consumida y calorías actualizadas."}), 200
 
 
-# actualiza las calorias del plan
+# actualiza las calorías del plan
 def act_calories(cal, plan_id):
     plan = Plan.query.filter_by(id=plan_id).first()
 
     if not plan:
         return jsonify({"error": "No existe el plan"}), 404
 
-    plan.calories = plan.calories - cal
+    plan.calories = plan.calories + cal  # Se suma o resta dependiendo de la acción
     db.session.commit()
 
 
