@@ -308,18 +308,7 @@ def calculate_carbohydrates(food):
 #     act_calories(meal.total_calories, plan.plan_id)
 #
 #     return jsonify({"message": "estado de comida cambiada a True."}), 200
-#
-#
-# # actualiza las calorias del plan
-# def act_calories(cal, plan_id):
-#     plan = Plan.query.filter_by(id=plan_id).first()
-#
-#     if not plan:
-#         return jsonify({"error": "No existe el plan"}), 404
-#
-#     plan.calories = plan.calories - cal
-#     db.session.commit()
-#
+
 
 @meal_bp.route("/finish-meal", methods=["POST"])
 @token_required
@@ -386,9 +375,9 @@ def finish_meal(current_user_id):
         db.session.commit()
 
         # Obtener el plan asociado a la comida y actualizar las calorías
-        plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
-        if plan:
-            act_calories(meal.total_calories, plan.plan_id)  # Se suman las calorías al plan
+        # plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
+        # if plan:
+        #     act_calories(meal.total_calories, plan.plan_id)  # Se suman las calorías al plan
 
         return jsonify({"message": "Comida desmarcada y calorías actualizadas."}), 200
 
@@ -397,9 +386,9 @@ def finish_meal(current_user_id):
     db.session.commit()
 
     # Obtener el plan asociado a la comida y actualizar las calorías
-    plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
-    if plan:
-        act_calories(-meal.total_calories, plan.plan_id)  # Se restan las calorías al plan
+    # plan = PlanMeal.query.filter_by(meal_id=meal_id).first()
+    # if plan:
+    #     act_calories(-meal.total_calories, plan.plan_id)  # Se restan las calorías al plan
 
     return jsonify({"message": "Comida marcada como consumida y calorías actualizadas."}), 200
 

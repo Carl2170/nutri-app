@@ -379,19 +379,77 @@ def get_plans(current_user_id):
     return jsonify(response), 200
 
 
+# @plan_meal_bp.route("/finish-plan", methods=["POST"])
+# @token_required
+# def finish_plan(current_user_id):
+#     """
+#     Finalizar un plan de comidas en progreso.
+#     Esta ruta cambia el estado de un plan activo a "terminado".
+#     ---
+#     tags:
+#       - Plan Nutricional
+#     parameters:
+#       - in: body
+#         name: body
+#         description: ID del plan a finalizar.
+#         required: true
+#         schema:
+#           type: object
+#           properties:
+#             plan_id:
+#               type: integer
+#               example: 1
+#     responses:
+#       200:
+#         description: Plan finalizado con éxito.
+#         schema:
+#           type: object
+#           properties:
+#             message:
+#               type: string
+#               example: "Plan finalizado con éxito."
+#       404:
+#         description: No se encontró un plan activo para el usuario.
+#         schema:
+#           type: object
+#           properties:
+#             error:
+#               type: string
+#               example: "No hay planes activos"
+#     """
+#     # Obtener los datos de la solicitud
+#     data = request.get_json()
+#
+#     # Validar que se haya proporcionado el plan_id
+#     plan_id = data.get("plan_id")
+#     if not plan_id:
+#         return jsonify({"error": "El campo 'plan_id' es requerido."}), 400
+#
+#     # Obtener el plan actual con status "en progreso"
+#     current_plan = Plan.query.filter_by(id=plan_id, user_id=current_user_id, status="en progreso").first()
+#     if not current_plan:
+#         return jsonify({"error": "No hay planes activos"}), 404
+#
+#     # Cambiar el estado del plan a "terminado"
+#     current_plan.status = "terminado"
+#     db.session.commit()
+#
+#     return jsonify({"message": "Plan finalizado con éxito."}), 200
+
 @plan_meal_bp.route("/finish-plan", methods=["POST"])
 @token_required
 def finish_plan(current_user_id):
     """
-    Finalizar un plan de comidas en progreso.
-    Esta ruta cambia el estado de un plan activo a "terminado".
+    Finalizar o reiniciar un plan de comidas en función de su estado actual.
+    Si el plan está "en progreso", se cambia a "terminado".
+    Si el plan está "terminado", se cambia a "en progreso".
     ---
     tags:
       - Plan Nutricional
     parameters:
       - in: body
         name: body
-        description: ID del plan a finalizar.
+        description: ID del plan a modificar.
         required: true
         schema:
           type: object
@@ -401,21 +459,21 @@ def finish_plan(current_user_id):
               example: 1
     responses:
       200:
-        description: Plan finalizado con éxito.
+        description: Plan modificado con éxito.
         schema:
           type: object
           properties:
             message:
               type: string
-              example: "Plan finalizado con éxito."
+              example: "Plan modificado con éxito."
       404:
-        description: No se encontró un plan activo para el usuario.
+        description: No se encontró un plan para el usuario.
         schema:
           type: object
           properties:
             error:
               type: string
-              example: "No hay planes activos"
+              example: "No se encontró un plan con ese ID."
     """
     # Obtener los datos de la solicitud
     data = request.get_json()
@@ -425,17 +483,104 @@ def finish_plan(current_user_id):
     if not plan_id:
         return jsonify({"error": "El campo 'plan_id' es requerido."}), 400
 
-    # Obtener el plan actual con status "en progreso"
-    current_plan = Plan.query.filter_by(id=plan_id, user_id=current_user_id, status="en progreso").first()
+    # Obtener el plan con el ID proporcionado
+    current_plan = Plan.query.filter_by(id=plan_id, user_id=current_user_id).first()
     if not current_plan:
-        return jsonify({"error": "No hay planes activos"}), 404
+        return jsonify({"error": "No se encontró un plan con ese ID."}), 404
 
-    # Cambiar el estado del plan a "terminado"
-    current_plan.status = "terminado"
+    # Cambiar el estado del plan según su estado actual
+    if current_plan.status == "en progreso":
+        current_plan.status = "terminado"
+        message = "Plan finalizado con éxito."
+    elif current_plan.status == "terminado":
+        current_plan.status = "en progreso"
+        message = "Plan reiniciado a 'en progreso'."
+    else:
+        return jsonify({"error": "El estado del plan es desconocido."}), 400
+
+    # Guardar los cambios en la base de datos
     db.session.commit()
 
-    return jsonify({"message": "Plan finalizado con éxito."}), 200
+    return jsonify({"message": message}), 200
 
+@plan_meal_bp.route("/update-plan-status", methods=["POST"])
+@token_required
+def update_plan_status(current_user_id):
+    """
+    Verificar el estado de las comidas asociadas al plan y actualizar el estado del plan.
+    Si todas las comidas están en 'True', el plan se marca como 'terminado'.
+    Si alguna comida está en 'False', el plan se marca como 'en progreso'.
+    ---
+    tags:
+      - Plan Nutricional
+    parameters:
+      - in: body
+        name: body
+        description: ID del plan a verificar y actualizar.
+        required: true
+        schema:
+          type: object
+          properties:
+            plan_id:
+              type: integer
+              example: 1
+    responses:
+      200:
+        description: Estado del plan actualizado con éxito.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Estado del plan actualizado con éxito."
+      404:
+        description: No se encontró un plan o comidas asociadas al plan.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "No se encontró un plan o comidas asociadas al plan."
+    """
+    # Obtener los datos de la solicitud
+    data = request.get_json()
+
+    # Validar que se haya proporcionado el plan_id
+    plan_id = data.get("plan_id")
+    if not plan_id:
+        return jsonify({"error": "El campo 'plan_id' es requerido."}), 400
+
+    # Obtener el plan con el ID proporcionado
+    current_plan = Plan.query.filter_by(id=plan_id, user_id=current_user_id).first()
+    if not current_plan:
+        return jsonify({"error": "No se encontró un plan con ese ID."}), 404
+
+    # Obtener las comidas asociadas al plan mediante la tabla intermedia `PlanMeal`
+    plan_meals = PlanMeal.query.filter_by(plan_id=plan_id).all()
+    if not plan_meals:
+        return jsonify({"error": "No se encontraron comidas asociadas al plan."}), 404
+
+    # Verificar el estado de las comidas
+    all_meals_completed = True
+    for plan_meal in plan_meals:
+        meal = plan_meal.meal
+        if meal.status != True:  # Si alguna comida tiene estado False
+            all_meals_completed = False
+            break
+
+    # Si todas las comidas están completas, marcar el plan como "terminado"
+    if all_meals_completed:
+        current_plan.status = "terminado"
+        message = "Plan finalizado con éxito."
+    else:
+        # Si alguna comida está incompleta, marcar el plan como "en progreso"
+        current_plan.status = "en progreso"
+        message = "Plan reiniciado a 'en progreso'."
+
+    # Guardar los cambios en la base de datos
+    db.session.commit()
+
+    return jsonify({"message": message, "success": all_meals_completed}), 200
 
 # @plan_meal_bp.route("/act-calories", methods=["POST"])
 # @token_required
